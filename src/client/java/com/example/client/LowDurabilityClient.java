@@ -2,11 +2,11 @@ package com.example.client;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 public class LowDurabilityClient implements ClientModInitializer {
     private static final float THRESHOLD = 0.10f;
@@ -19,13 +19,13 @@ public class LowDurabilityClient implements ClientModInitializer {
                 warnedItem = null;
                 return;
             }
-            ItemStack stack = client.player.getMainHandStack();
-            if (stack.isEmpty() || !stack.isDamageable()) {
+            ItemStack stack = client.player.getMainHandItem();
+            if (stack.isEmpty() || !stack.isDamageableItem()) {
                 warnedItem = null;
                 return;
             }
             int max = stack.getMaxDamage();
-            int remaining = max - stack.getDamage();
+            int remaining = max - stack.getDamageValue();
             boolean low = remaining <= Math.max(1, (int) (max * THRESHOLD));
             if (!low) {
                 warnedItem = null;
@@ -34,9 +34,9 @@ public class LowDurabilityClient implements ClientModInitializer {
             if (warnedItem != stack.getItem()) {
                 warnedItem = stack.getItem();
                 client.getSoundManager().play(
-                    PositionedSoundInstance.master(SoundEvents.BLOCK_ANVIL_LAND, 1.5f));
-                client.inGameHud.setOverlayMessage(
-                    Text.literal("Low durability! " + remaining + " left"), false);
+                    SimpleSoundInstance.forUI(SoundEvents.ANVIL_LAND, 1.5f));
+                client.gui.setOverlayMessage(
+                    Component.literal("Low durability! " + remaining + " left"), false);
             }
         });
     }
